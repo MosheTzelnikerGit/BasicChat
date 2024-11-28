@@ -1,0 +1,51 @@
+stages:
+  - install
+  - test
+  - build
+
+
+# Install dependencies
+install:
+  stage: install
+  image: node:18-alpine
+  script:
+    - echo "Installing dependencies..."
+    - cd server
+    - npm ci
+    - cd ../client
+    - npm ci
+  artifacts:
+    paths:
+      - client/node_modules/
+      - server/node_modules/
+  cache:
+    paths:
+      - client/node_modules/
+      - server/node_modules/
+
+# Run tests
+test:
+  stage: test
+  image: node:18-alpine
+  script:
+    - echo "Testing the server"
+    - cd server
+    - npm test
+  dependencies:
+    - install
+
+# Build the project
+build:
+  stage: build
+  image: node:18-alpine
+  script:
+    - echo "Building server"
+    - cd server
+    - npm run build
+    - echo "Finished building server, starting to build client"
+    - cd ../client
+    - npm run build
+    - echo "Finished building both server and client"
+  dependencies:
+    - install
+    - test
